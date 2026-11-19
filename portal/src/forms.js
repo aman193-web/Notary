@@ -5,7 +5,7 @@
 let heroTimer = null;
 function authBrand() {
   const steps = [['Notary assigned', '10:37 AM'], ['Scheduler assigned', '10:41 AM'], ['Date & time set', '10:44 AM'], ['Signing completed', '4:52 PM']];
-  return `<section class="auth-brand on-night" aria-label="About Notary Nexxus">
+  return `<section class="auth-brand on-night" aria-label="About Notary Nexxus">${guilloche()}
     <div class="auth-eyebrow"><span class="dot"></span>Signing service management</div>
     <div class="auth-hero"><h1 class="auth-h">Every signing,<br>from order to <em>seal.</em></h1>
       <p class="auth-sub">Take orders, dispatch notaries, schedule signings, handle documents and invoice clients — one workspace for your staff, your clients and notaries in the field.</p>
@@ -155,15 +155,15 @@ function summaryCard() {
   const loc = d.street ? `${esc(d.street)}${d.unit ? ', ' + esc(d.unit) : ''}<span class="s">${[d.city, d.st.toUpperCase(), d.zip].filter(Boolean).map(esc).join(', ')}</span>` : '';
   const appt = d.date ? `${fmtDate(d.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}<span class="s">${d.time ? to12h(d.time) + ' · ' + esc(d.tz) : 'Time TBD'}</span>` : '';
   const c = clientBy(d.client), est = c && d.type ? (c.fees[d.type] || 0) + (d.flags.includes('Rush') ? S.ws.rush : 0) + (d.flags.includes('Scanbacks') ? S.ws.scan : 0) : 0;
-  return `<div class="sum-card on-night"><div class="sum-head"><span class="t">${icon('orders', 15)}Order summary</span><span class="chip">Draft</span></div>
-    <div class="sum-seal">${seal(ch, 72, { center: true, tip: false })}<div style="min-width:0"><div class="t truncate">${d.client ? esc(d.client) : 'No client yet'}</div><div class="s">Opens at ${done} of 4. ${done < 2 ? 'Add a date, time and scheduler to start further along.' : 'Next: invite a notary from the order page.'}</div></div></div>
+  return `<div class="receipt"><div class="sum-head"><span class="t">Order ticket</span><span class="chip">Draft</span></div>
+    <div class="sum-seal">${seal(ch, 60, { center: true, tip: false })}<div style="min-width:0"><div class="t truncate">${d.client ? esc(d.client) : 'No client yet'}</div><div class="s">Opens at ${done} of 4. ${done < 2 ? 'Add a date, time and scheduler to start further along.' : 'Next: invite a notary from the order page.'}</div></div></div>
     <dl class="sum-list">
       <div><dt>Signer</dt><dd class="${d.signer ? '' : 'none'}">${d.signer ? esc(d.signer) + (d.phone ? `<span class="s mono">${esc(d.phone)}</span>` : '') : '—'}</dd></div>
       <div><dt>Type</dt><dd class="${d.type ? '' : 'none'}">${d.type ? esc(d.type) + (d.file ? `<span class="s mono">${esc(d.file)}</span>` : '') : '—'}</dd></div>
       <div><dt>When</dt><dd class="${appt ? '' : 'none'}">${appt || '—'}</dd></div>
       <div><dt>Where</dt><dd class="${loc ? '' : 'none'}">${loc || '—'}</dd></div>
       ${d.flags.length ? `<div><dt>Flags</dt><dd>${d.flags.join(' · ')}</dd></div>` : ''}${d.docs.length ? `<div><dt>Files</dt><dd>${d.docs.length} document${d.docs.length > 1 ? 's' : ''}</dd></div>` : ''}
-      ${est ? `<div><dt>Est. fee</dt><dd class="mono">${money(est)}</dd></div>` : ''}</dl>
+</dl><div class="rc-total"><span>Estimated fee</span><b>${est ? money(est) : '—'}</b></div>
     <div class="req"><div class="req-head"><span>Required fields</span><b>${ok} of ${REQ.length}</b></div><div class="req-bar ${left ? '' : 'full'}"><i style="width:${ok / REQ.length * 100}%"></i></div>
       <ul>${REQ.map(r => `<li class="${r.test(d) ? 'ok' : ''}" data-k="${r.k}"><button type="button" data-action="focus" data-to="${r.focus}"><span class="bx">${r.test(d) ? icon('check', 10) : ''}</span>${r.label}</button></li>`).join('')}</ul></div>
     <div class="sum-cta"><button class="btn btn-primary btn-lg btn-block" data-action="place" ${left ? 'disabled' : ''}>${left ? `${left} required field${left > 1 ? 's' : ''} left` : `Place order ${icon('arrowR', 16)}`}</button>

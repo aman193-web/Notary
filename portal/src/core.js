@@ -73,10 +73,10 @@ const I = {
   smartphone:'<rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/>',
   receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
 };
-const icon = (n, s = 16, c = '') => `<svg class="ic ${c}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n] || ''}</svg>`;
+const icon = (n, s = 16, c = '') => `<svg class="ic ${c}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n] || ''}</svg>`;
 const GOOGLE = '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
 let logoN = 0;
-const LOGO = (s = 28) => { const id = 'lg' + (logoN++); return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B7CFF"/><stop offset="1" stop-color="#1F35B5"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#${id})"/><path d="M10 22.5V9.5l12 13V9.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="9.5" r="1.9" fill="#C9D4FF"/></svg>`; };
+const LOGO = (s = 28) => { const id = 'lg' + (logoN++); return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#F4B63F"/><path d="M10 22.5V9.5l12 13V9.5" fill="none" stroke="#141613" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="22" cy="9.5" r="1.9" fill="#141613"/></svg>`; };
 
 /* =========================================================
    UTILS
@@ -516,3 +516,49 @@ function confirmModal({ title, desc, confirm = 'Confirm', danger = false, onConf
   openModal({ title, desc, size: 'sm', body: '', foot: `<button type="button" class="btn btn-ghost" data-action="close-modal">Cancel</button><button type="submit" class="btn ${danger ? 'btn-danger-solid' : 'btn-primary'}">${esc(confirm)}</button>`, onSubmit: () => { onConfirm(); } });
   $('.modal-body').remove();
 }
+
+/* Engraved guilloche rosette (certificate/banknote motif) */
+let gCache = null;
+function guilloche() {
+  if (gCache) return gCache;
+  let d = '';
+  for (let k = 0; k < 48; k++) {
+    const rot = k / 48 * Math.PI, pts = [];
+    for (let t = 0; t <= 360; t += 4) {
+      const a = t * Math.PI / 180, r = 180 + 34 * Math.sin(a * 7), x = r * Math.cos(a), y = r * Math.sin(a) * .42;
+      pts.push((x * Math.cos(rot) - y * Math.sin(rot) + 250).toFixed(1) + ' ' + (x * Math.sin(rot) + y * Math.cos(rot) + 250).toFixed(1));
+    }
+    d += 'M' + pts.join('L') + 'Z';
+  }
+  return (gCache = `<svg class="guilloche" viewBox="0 0 500 500" aria-hidden="true"><path d="${d}"/></svg>`);
+}
+/* Sliding underline for list tabs */
+const inkPrev = {};
+function placeInk() {
+  $$('.toolbar .seg-ctl:not(.icons), .dir-tools .seg-ctl, .summary-strip .seg-ctl').forEach((g, gi) => {
+    let ink = $('.tab-ink', g); if (!ink) { ink = document.createElement('span'); ink.className = 'tab-ink'; g.appendChild(ink); }
+    const act = $('button.active', g); if (!act) { ink.style.width = '0'; return; }
+    const left = act.offsetLeft + 10, width = act.offsetWidth - 20, key = location.hash.split('?')[0] + gi, prev = inkPrev[key];
+    ink.style.left = left + 'px'; ink.style.width = width + 'px';
+    if (prev && M.ok() && (prev.left !== left || prev.width !== width)) gsap.fromTo(ink, { left: prev.left, width: prev.width }, { left, width, duration: .38, ease: 'power3.out' });
+    inkPrev[key] = { left, width };
+  });
+}
+/* Brief working state on buttons that commit something */
+function busy(btn, fn, ms = 450) { if (!btn || reduceMotion()) { fn(); return; } btn.classList.add('loading'); btn.setAttribute('aria-busy', 'true'); setTimeout(() => { btn.classList.remove('loading'); btn.removeAttribute('aria-busy'); fn(); }, ms); }
+
+/* Timeline + progress-track motion */
+M.day = root => {
+  if (!M.ok()) return; const t = $('.day-track', root); if (!t) return;
+  gsap.from($('.day-past', t), { width: 0, duration: 1.1, ease: 'power2.out' });
+  gsap.from($('.day-now', t), { scaleY: 0, duration: .5, delay: .7, ease: 'back.out(2.5)' });
+  $$('.dm', t).forEach((m, i) => gsap.from(m.children, { autoAlpha: 0, y: m.classList.contains('dn') ? 10 : -6, duration: .45, delay: .3 + i * .1, stagger: .05, ease: 'power3.out', clearProps: 'transform,opacity,visibility' }));
+};
+M.track = root => {
+  if (!M.ok()) return; const t = $('.track', root); if (!t) return;
+  gsap.from($('.track-line', t), { scaleX: 0, transformOrigin: 'left center', duration: .9, ease: 'power2.inOut' });
+  gsap.from($$('.tnode', t), { scale: .3, autoAlpha: 0, duration: .5, stagger: .14, delay: .15, ease: 'back.out(2.5)', clearProps: 'transform,opacity,visibility' });
+};
+M.meters = root => { if (M.ok()) gsap.from($$('.mbar i, .left-bar i, .tk-split i', root), { scaleX: 0, transformOrigin: 'left center', duration: .8, stagger: .03, ease: 'power3.out' }); };
+const pageMotion = M.page;
+M.page = root => { pageMotion(root); M.day(root); M.track(root); M.meters(root); };

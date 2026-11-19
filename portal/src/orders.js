@@ -16,52 +16,38 @@ function deltaChip(now, prev, pct) {
 }
 function overview() {
   const n = DAILY.nov, o = DAILY.oct, L = a => a[a.length - 1], P = a => a[a.length - 2];
-  const k = [
-    ['Signings', 'today', L(n.signings), P(n.signings), `${P(n.signings)} yesterday`, n.signings],
-    ['Signings', 'November', sum(n.signings), sum(o.signings), `${sum(o.signings)} in October`, n.signings, true],
-    ['Orders', 'today', L(n.orders), P(n.orders), `${P(n.orders)} yesterday`, n.orders],
-    ['Orders', 'November', sum(n.orders), sum(o.orders), `${sum(o.orders)} in October`, n.orders, true],
-  ];
   const profit = n.revenue - n.payouts, margin = Math.round(profit / n.revenue * 1000) / 10;
-  return `<section class="card overview" aria-label="At a glance">
-    ${k.map(x => `<div class="kpi"><div class="kpi-label">${x[0]} <span class="per">· ${x[1]}</span></div>
-      <div class="kpi-row"><div class="kpi-value" data-count="${x[2]}">${x[2]}</div>${spark(x[5].slice(-14))}</div>
-      <div class="kpi-foot">${deltaChip(x[2], x[3], x[6])}<span class="truncate">${x[4]}</span></div></div>`).join('')}
-    <div class="fin">
-      <div class="fin-top"><div class="kpi-label">Revenue <span class="per">· November</span></div><a class="link" href="#/reports">Report ${icon('right', 13)}</a></div>
-      <div class="kpi-row" style="margin-top:10px"><div class="kpi-value" data-count="${n.revenue}" data-fmt="money">${money(n.revenue, 0)}</div>${deltaChip(n.revenue, o.revenue, true)}</div>
-      <div class="fin-stats"><div><div class="k">Notary payouts</div><div class="v">${money(n.payouts, 0)}</div></div><div><div class="k">Gross profit</div><div class="v">${money(profit, 0)}</div></div></div>
-      <div class="margin"><span>${margin}% margin</span><span class="bar" aria-hidden="true"><i class="p" style="width:${100 - margin}%"></i><i class="g" style="width:${margin}%"></i></span></div>
-    </div></section>`;
+  const k = [
+    ['Signings', 'today', L(n.signings), P(n.signings), 'vs yesterday', n.signings],
+    ['Signings', 'Nov', sum(n.signings), sum(o.signings), 'vs October', n.signings, true],
+    ['Orders', 'today', L(n.orders), P(n.orders), 'vs yesterday', n.orders],
+    ['Orders', 'Nov', sum(n.orders), sum(o.orders), 'vs October', n.orders, true],
+  ];
+  return `<section class="ticker" aria-label="At a glance">
+    ${k.map(x => `<div class="tk"><div class="tk-l">${x[0]} <span>${x[1]}</span></div><div class="tk-v" data-count="${x[2]}">${x[2]}</div><div class="tk-d">${deltaChip(x[2], x[3], x[6])}<span>${x[4]}</span></div>${spark(x[5].slice(-14))}</div>`).join('')}
+    <div class="tk tk-fin"><div class="tk-l">Revenue <span>November</span><a class="link" href="#/reports">Report</a></div><div class="tk-v" data-count="${n.revenue}" data-fmt="money">${money(n.revenue, 0)}</div><div class="tk-d">${deltaChip(n.revenue, o.revenue, true)}<span>vs October</span></div>
+      <div class="tk-split" aria-hidden="true"><i style="width:${100 - margin}%"></i><i style="width:${margin}%"></i></div><div class="tk-legend"><span>Payouts ${money(n.payouts, 0)}</span><span>Profit ${money(profit, 0)} · ${margin}%</span></div></div></section>`;
 }
 function alertsCard(active) {
   const total = active.filter(o => needsOf(o)).length;
-  return `<section class="card" aria-label="Needs you">
-    <div class="card-head"><span class="pulse" aria-hidden="true"></span><span class="card-title">Needs you</span><span class="card-sub">· ${total} order${total === 1 ? '' : 's'}</span><span class="spacer"></span>${S.alert ? `<button class="link quiet" data-action="alert" data-key="">${icon('x', 13)}Clear filter</button>` : ''}</div>
-    <div class="alert-grid">${ALERTS.map(a => {
-      const list = active.filter(a.test), n = list.length;
-      const ids = list.slice(0, 3).map(o => o.id).join(', ') + (n > 3 ? ` +${n - 3}` : '');
-      return `<button class="atile ${S.alert === a.key ? 'active' : ''}" data-action="alert" data-key="${a.key}" aria-pressed="${S.alert === a.key}" ${n ? '' : 'disabled'}>
-        <span class="ci">${icon(a.icon, 16)}</span><span class="tx"><span class="n" style="display:block">${n}</span><span class="l" style="display:block">${a.label}</span><span class="s truncate" style="display:block">${n ? ids : 'All clear'}</span></span>${icon('arrowR', 15, 'go')}</button>`;
+  return `<section class="queue" aria-label="Needs you"><div class="sect-h"><span class="pulse" aria-hidden="true"></span><h2>Needs you</h2><span class="sect-sub">${total} order${total === 1 ? '' : 's'}</span><span class="spacer"></span>${S.alert ? `<button class="link quiet" data-action="alert" data-key="">Clear filter</button>` : ''}</div>
+    <div class="q-grid">${ALERTS.map(a => {
+      const list = active.filter(a.test), n = list.length, ids = list.slice(0, 3).map(o => o.id).join(' · ') + (n > 3 ? ` +${n - 3}` : '');
+      return `<button class="qt ${S.alert === a.key ? 'active' : ''}" data-action="alert" data-key="${a.key}" aria-pressed="${S.alert === a.key}" ${n ? '' : 'disabled'}><span class="q-n">${n}</span><span class="q-l">${a.label}</span><span class="q-ids">${n ? ids : 'All clear'}</span>${icon('arrowR', 15, 'go')}</button>`;
     }).join('')}</div></section>`;
 }
 function todayCard() {
-  const today = S.orders.filter(o => o.date === TODAY && o.status !== 'deleted' && o.status !== 'cancelled').sort((a, b) => sigDate(a) - sigDate(b));
+  const today = S.orders.filter(o => o.date === TODAY && !['deleted', 'cancelled'].includes(o.status)).sort((a, b) => sigDate(a) - sigDate(b));
   const tmr = S.orders.filter(o => o.status === 'active' && o.date && dayDiff(o.date) === 1).length;
-  let nowPlaced = false;
-  const rows = today.map(o => {
-    const t = sigDate(o), past = t < NOW, done = o.status === 'completed';
-    let marker = '';
-    if (!past && !nowPlaced) { nowPlaced = true; marker = nowLine(); }
-    const cls = done ? 'done' : o.pastDue || past ? 'late' : marker ? 'next' : '';
-    const chip = done ? `<span class="chip foil">${icon('badge', 12)}Sealed</span>` : (o.pastDue || past) ? '<span class="chip red">Mark complete</span>' : `<span class="chip ink">${rel(o)}</span>`;
-    return marker + `<button class="ag ${cls}" data-action="peek" data-id="${o.id}"><span class="ag-time">${esc(o.time)}</span><span class="ag-rail"><span class="ag-dot"></span></span>
-      <span class="ag-main"><span class="nm truncate" style="display:block">${esc(o.signer)}</span><span class="mt truncate" style="display:block">${o.id} · ${esc(o.city)} · ${esc(o.notary || 'No notary')}</span></span>${chip}</button>`;
-  }).join('') + (nowPlaced ? '' : nowLine());
-  return `<section class="card" aria-label="Today's signings">
-    <div class="card-head"><span class="card-ic">${icon('cal', 15)}</span><span class="card-title">Today</span><span class="card-sub">· ${fmtDate(TODAY, { weekday: 'short', month: 'short', day: 'numeric' })} · ${today.length} signing${today.length === 1 ? '' : 's'}</span></div>
-    <div class="agenda">${today.length ? rows : '<div class="ag-empty">No signings today.</div>'}</div>
-    <div class="card-foot"><span>Tomorrow · ${tmr} signing${tmr === 1 ? '' : 's'}</span><button class="link" data-action="by-date">See upcoming ${icon('right', 13)}</button></div></section>`;
+  const h0 = 7, h1 = 19, pos = d => Math.max(0, Math.min(100, ((d.getHours() + d.getMinutes() / 60) - h0) / (h1 - h0) * 100)), nowP = pos(NOW);
+  const state = o => o.status === 'completed' ? ['done', 'Sealed'] : (o.pastDue || sigDate(o) < NOW) ? ['late', 'Mark complete'] : ['next', rel(o)];
+  const marks = today.map((o, i) => { const [c, st] = state(o); return `<button class="dm ${c} ${i % 2 ? 'dn' : 'up'}" style="left:${pos(sigDate(o))}%" data-action="peek" data-id="${o.id}" aria-label="${esc(o.time)} · ${esc(o.signer)} · ${st}"><span class="dm-dot"></span><span class="dm-stem"></span><span class="dm-card"><span class="dm-r1"><b>${esc(o.time)}</b><em>${st}</em></span><span class="nm truncate">${esc(o.signer)}</span></span></button>`; }).join('');
+  const hrs = [8, 10, 12, 14, 16, 18].filter(h => Math.abs(pos(new Date(2026, 10, 19, h)) - nowP) > 6).map(h => `<span style="left:${pos(new Date(2026, 10, 19, h))}%">${((h + 11) % 12) + 1}${h < 12 ? 'a' : 'p'}</span>`).join('') + `<span class="now-l" style="left:${nowP}%">Now</span>`;
+  let placed = false;
+  const rows = today.map(o => { let m = ''; if (sigDate(o) >= NOW && !placed) { placed = true; m = nowLine(); } const [c, st] = state(o);
+    return m + `<button class="ag ${c}" data-action="peek" data-id="${o.id}"><span class="ag-time">${esc(o.time)}</span><span class="ag-rail"><span class="ag-dot"></span></span><span class="ag-main"><span class="nm truncate" style="display:block">${esc(o.signer)}</span><span class="mt truncate" style="display:block">${o.id} · ${esc(o.city)} · ${esc(o.notary || 'No notary')}</span></span><span class="chip ${c === 'done' ? 'foil' : c === 'late' ? 'red' : 'ink'}">${st}</span></button>`; }).join('') + (placed ? '' : nowLine());
+  return `<section class="day" aria-label="Today's signings"><div class="sect-h"><h2>Today</h2><span class="sect-sub">${fmtDate(TODAY, { weekday: 'short', month: 'short', day: 'numeric' })} · ${today.length} signing${today.length === 1 ? '' : 's'}</span><span class="spacer"></span><button class="link" data-action="by-date">Tomorrow · ${tmr}</button></div>
+    ${today.length ? `<div class="day-track"><div class="day-hours">${hrs}</div><div class="day-line"></div><div class="day-past" style="width:calc(${nowP}% + 12px)"></div><div class="day-now" style="left:${nowP}%"></div>${marks}</div><div class="agenda day-list">${rows}</div>` : '<div class="ag-empty">No signings today.</div>'}</section>`;
 }
 const nowLine = () => `<div class="ag-now" aria-label="Current time"><span>${NOW.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span><span class="nd"></span><span class="ln"></span></div>`;
 
@@ -83,10 +69,10 @@ function signingCell(o) {
 }
 function teamCell(o) {
   const pend = !o.notary && pendingInvite(o);
-  const sched = o.scheduler ? `<span class="nm">${esc(o.scheduler)}</span>` : '<span class="tm-none">Unassigned</span>';
-  const not = o.notary ? `<span class="nm">${esc(o.notary)}</span>` : pend ? `<span class="nm tm-pending">Invited · ${esc(first(pend.name))}</span>` : '<span class="tm-none">Unassigned</span>';
-  return `<div class="tm" data-tip="Scheduler">${icon('headset', 13)}${sched}</div><div class="tm" data-tip="Notary">${icon('stamp', 13)}${not}</div>`;
+  const row = (name, role, ic) => name ? `<div class="tm" data-tip="${role}">${av(name, 'xs')}<span class="nm">${esc(name)}</span></div>` : `<div class="tm" data-tip="${role}"><span class="av-empty">${icon(ic, 10)}</span><span class="tm-none">Unassigned</span></div>`;
+  return row(o.scheduler, 'Scheduler', 'headset') + (pend ? `<div class="tm" data-tip="Notary invite pending"><span class="av-empty pend">${esc(initials(pend.name))}</span><span class="nm tm-pending">Invited · ${esc(first(pend.name))}</span></div>` : row(o.notary, 'Notary', 'stamp'));
 }
+const railOf = o => o.status === 'completed' ? 'gold' : o.status !== 'active' ? 'mute' : (o.pastDue || needsOf(o) >= 2) ? 'red' : needsOf(o) ? 'amber' : 'green';
 function progText(o) {
   const n = needsOf(o);
   if (o.status === 'completed') return '<div class="prog-s done">Sealed</div>';
@@ -128,7 +114,7 @@ function tableView(list) {
   const rows = list.map(o => {
     let g = '';
     if (S.sort === 'date') { const k = groupOf(o); if (k !== grp) { grp = k; g = `<tr class="grp"><td colspan="8">${k}<span class="n">${list.filter(x => groupOf(x) === k).length}</span></td></tr>`; } }
-    return g + `<tr class="clickable ${S.sel.has(o.id) ? 'selected' : ''} ${peekId === o.id ? 'peeked' : ''}" data-peek="${o.id}" tabindex="0" aria-label="Order ${o.id}, ${esc(o.signer)}">
+    return g + `<tr class="clickable rail-${railOf(o)} ${S.sel.has(o.id) ? 'selected' : ''} ${peekId === o.id ? 'peeked' : ''}" data-peek="${o.id}" tabindex="0" aria-label="Order ${o.id}, ${esc(o.signer)}">
       <td class="cb"><input type="checkbox" data-sel="${o.id}" ${S.sel.has(o.id) ? 'checked' : ''} aria-label="Select order ${o.id}"></td>
       <td class="c-order"><div class="oc">${seal(checksOf(o), 36)}<div class="oc-tx"><div class="ord-line"><a class="ord-no" href="#/orders/${o.id}">${o.id}</a>${flagIcons(o)}</div>${fileMeta(o)}${progText(o)}</div></div></td>
       <td>${signingCell(o)}</td>
@@ -140,7 +126,7 @@ function tableView(list) {
   }).join('');
   const cards = list.map(o => {
     const n = needsOf(o);
-    return `<button class="ocard" data-peek="${o.id}">${seal(checksOf(o), 40, { tip: false })}
+    return `<button class="ocard rail-${railOf(o)}" data-peek="${o.id}">${seal(checksOf(o), 40, { tip: false })}
       <span style="min-width:0"><span class="ord-no">${o.id}${flagIcons(o)}</span><span class="cell-1" style="display:block;margin-top:2px">${esc(o.signer)}</span></span>
       <span class="r">${o.date ? `<span class="sg-date ${dayDiff(o.date) === 0 ? 'today' : ''}" style="justify-content:flex-end">${dayLabel(o.date)}</span><span class="sg-time ${o.time ? '' : 'tbd'}" style="display:block">${o.time || 'Time TBD'}</span>` : '<span class="sg-date warn">Not scheduled</span>'}</span>
       <span class="meta"><span>${icon('building', 12)}${esc(o.client)}</span><span>${icon('pin', 12)}${esc(o.city)}</span>${n ? `<span style="color:var(--red);font-weight:500">${n} need${n === 1 ? 's' : ''} you</span>` : ''}</span></button>`;
@@ -148,14 +134,14 @@ function tableView(list) {
   return `<div class="table-wrap orders-wrap" id="orders-scroll"><table class="dt orders">
     <colgroup><col class="c-cb"><col class="c-order"><col class="c-sign"><col><col><col><col><col class="c-next"></colgroup>
     <thead><tr><th class="cb"><input type="checkbox" data-sel="all" ${allSel ? 'checked' : ''} aria-label="Select all orders"></th>
-      ${sortTh('id', 'Order', 'c-order')}${sortTh('date', 'Signing')}${sortTh('signer', 'Signer')}<th>Type &amp; location</th>${sortTh('client', 'Client')}<th>Team</th><th class="r">Next step</th></tr></thead>
+      ${sortTh('id', 'Order', 'c-order')}${sortTh('date', 'Signing')}${sortTh('signer', 'Signer')}<th>Type &amp; location</th>${sortTh('client', 'Client')}<th>Scheduler / Notary</th><th class="r">Next step</th></tr></thead>
     <tbody>${rows}</tbody></table></div><div class="order-cards">${cards}</div>`;
 }
 function boardView(list) {
   return `<div class="board">${STAGES.map(st => {
     const items = list.filter(o => stageOf(o) === st.key);
     return `<section class="bcol" aria-label="${st.label}"><div class="bcol-head">${quad(st.q)}${st.label}<span class="n">${items.length}</span></div><div class="bcol-desc">${st.desc}</div>
-      ${items.length ? items.map(o => `<button class="bcard ${peekId === o.id ? 'peeked' : ''}" data-peek="${o.id}">
+      ${items.length ? items.map(o => `<button class="bcard rail-${railOf(o)} ${peekId === o.id ? 'peeked' : ''}" data-peek="${o.id}">
         <span class="bcard-top">${seal(checksOf(o), 30)}<span style="min-width:0"><span class="ord-no">${o.id}${flagIcons(o)}</span><span class="cell-2" style="display:block">${esc(o.type)} · ${esc(o.city)}</span></span>
           <span class="r">${o.date ? `<span class="sg-date ${dayDiff(o.date) === 0 ? 'today' : ''}" style="justify-content:flex-end;font-size:12.5px">${dayLabel(o.date)}</span><span class="sg-time ${o.time ? '' : 'tbd'}" style="display:block">${o.time || 'Time TBD'}</span>` : '<span class="sg-date warn" style="font-size:12.5px">No date</span>'}</span></span>
         <span class="bcard-mid"><span class="cell-1" style="display:block">${esc(o.signer)}</span><span class="cell-2" style="display:block">${esc(o.client)}</span></span>
@@ -179,33 +165,33 @@ function ordersView() {
 }
 function pageOrders() {
   const active = S.orders.filter(o => o.status === 'active');
-  const cnt = s => S.orders.filter(o => o.status === s).length;
+  const cnt = st => S.orders.filter(o => o.status === st).length;
   const todayN = S.orders.filter(o => o.date === TODAY && !['deleted', 'cancelled'].includes(o.status)).length;
   const needN = active.filter(o => needsOf(o)).length;
   const sortLabel = { attention: 'Needs attention', date: 'Signing date', id: 'Order number', signer: 'Signer', client: 'Client' }[S.sort];
   return `
   <div class="page-head">
-    <div><div class="eyebrow">${fmtDate(TODAY, { weekday: 'long', month: 'long', day: 'numeric' })}</div><h1 class="h1">Orders</h1>
-      <p class="lede">${active.length} active · ${todayN} signing${todayN === 1 ? '' : 's'} today · ${needN} need${needN === 1 ? 's' : ''} you</p></div>
+    <div><h1 class="h1">Orders</h1>
+      <p class="lede">${fmtDate(TODAY, { weekday: 'long', month: 'long', day: 'numeric' })} · ${active.length} active · ${todayN} signing${todayN === 1 ? '' : 's'} today · <b>${needN} need${needN === 1 ? 's' : ''} you</b></p></div>
     <div class="head-actions">
-      <button class="btn btn-ghost" data-action="overview-toggle" aria-expanded="${S.overview}">${icon(S.overview ? 'eyeoff' : 'eye', 15)}${S.overview ? 'Hide overview' : 'Show overview'}</button>
+      <button class="btn btn-ghost" data-action="overview-toggle" aria-expanded="${S.overview}">${icon(S.overview ? 'eyeoff' : 'eye', 15)}${S.overview ? 'Hide figures' : 'Show figures'}</button>
       <button class="btn" data-action="export-orders">${icon('download', 15)}Export CSV</button>
       <a class="btn btn-primary" href="#/new">${icon('plus', 15)}New order</a></div>
   </div>
   <div class="ov-wrap" id="ov-wrap">${S.overview ? overview() : ''}</div>
   <div class="band">${alertsCard(active)}${todayCard()}</div>
-  <section class="card orders-card" id="orders-card" aria-label="Orders">
+  <section class="orders-card" id="orders-card" aria-label="Orders">
     <div class="toolbar">
       <div class="seg-ctl" role="tablist">${['active', 'hold', 'cancelled', 'completed', 'deleted'].map(t => `<button class="${S.tab === t ? 'active' : ''}" role="tab" aria-selected="${S.tab === t}" data-action="tab" data-tab="${t}">${tabName(t)}<span class="n">${cnt(t)}</span></button>`).join('')}</div>
       <div class="tb-spacer"></div>
       <div class="iw search">${icon('search', 15)}<input class="input" id="order-q" type="search" placeholder="Search order, signer, client…" value="${esc(S.q)}" aria-label="Search orders" autocomplete="off"></div>
-      <button class="btn btn-sm" style="height:34px" data-action="menu" data-menu="filters" id="filters-btn">${icon('filter', 15)}Filters${S.types.size + S.clientsF.size ? `<span class="filter-count">${S.types.size + S.clientsF.size}</span>` : ''}</button>
-      <button class="btn btn-sm" style="height:34px" data-action="menu" data-menu="sort">${icon('sort', 15)}<span class="muted">Sort:</span> ${sortLabel}</button>
+      <button class="btn btn-sm" data-action="menu" data-menu="filters" id="filters-btn">${icon('filter', 15)}Filters${S.types.size + S.clientsF.size ? `<span class="filter-count">${S.types.size + S.clientsF.size}</span>` : ''}</button>
+      <button class="btn btn-sm" data-action="menu" data-menu="sort">${icon('sort', 15)}<span class="muted">Sort:</span> ${sortLabel}</button>
       <div class="seg-ctl icons" role="group" aria-label="View">
         <button class="${S.view === 'table' || S.tab !== 'active' ? 'active' : ''}" data-action="view" data-v="table" aria-label="Table view" data-tip="Table">${icon('table', 15)}</button>
         <button class="${S.view === 'board' && S.tab === 'active' ? 'active' : ''}" data-action="view" data-v="board" aria-label="Board view" data-tip="${S.tab === 'active' ? 'Board by next step' : 'Board shows active orders'}" ${S.tab === 'active' ? '' : 'disabled'}>${icon('board', 15)}</button></div>
     </div>
-    <div id="orders-view">${ordersView()}</div>
+    <div class="sheet" id="orders-view">${ordersView()}</div>
   </section>
   <div id="bulk-host">${bulkBar()}</div>`;
 }
@@ -236,7 +222,7 @@ function refreshOrders(animate) {
   scrollTo(0, y); bindScrollShadow(); prevSel = S.sel.size;
   if (qf) { const q = $('#order-q'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
   if (animate) M.rows($('#orders-view'));
-  updateNavCounts();
+  updateNavCounts(); placeInk();
 }
 function bindScrollShadow() {
   const w = $('#orders-scroll'); if (!w) return;
@@ -314,13 +300,13 @@ function stepCells(o) {
   const ch = checksOf(o), complete = ch.every(Boolean), pend = pendingInvite(o), act = o.status === 'active';
   const cells = [
     ['Notary', ch[0], o.notary || (pend ? `Invite sent · ${pend.name}` : null), 'Unassigned', act ? `<button class="link" data-action="scroll" data-to="notary-card">${o.notary ? 'Change' : pend ? 'Manage invite' : 'Find a notary'}</button>` : ''],
-    ['Scheduler', ch[1], o.scheduler, 'Unassigned', act ? `<button class="link" data-action="menu" data-menu="sched:${o.id}">${o.scheduler ? 'Change' : 'Assign'} ${icon('down', 13)}</button>` : ''],
+    ['Scheduler', ch[1], o.scheduler, 'Unassigned', act ? `<button class="link" data-action="menu" data-menu="sched:${o.id}">${o.scheduler ? 'Change' : 'Assign'}</button>` : ''],
     ['Date & time', ch[2], o.date ? `${fmtDate(o.date)} · ${o.time ? o.time + ' ' + o.tz : 'Time TBD'}` : null, 'Not scheduled', act ? `<button class="link" data-action="edit-field" data-id="${o.id}" data-key="${o.date ? 'time' : 'date'}">${ch[2] ? 'Reschedule' : o.date ? 'Set time' : 'Set date'}</button>` : ''],
     ['Completed', ch[3], o.status === 'completed' ? 'Signing completed' : o.pastDue ? 'Signing time has passed' : 'After the signing', '', act && o.notary ? `<button class="link" data-action="complete" data-id="${o.id}">Mark complete</button>` : ''],
   ];
-  return `<div class="steps">${cells.map((c, i) => {
-    const st = c[1] ? '<span class="st ok">Done</span>' : i === 3 ? (o.pastDue && act ? '<span class="st need">Needs you</span>' : '<span class="st wait">Pending</span>') : act ? '<span class="st need">Needs you</span>' : '<span class="st wait">—</span>';
-    return `<div class="step"><div class="step-top">${quad(i, c[1], complete)}${c[0]}${st}</div><div class="step-val ${c[2] ? '' : 'none'}" title="${esc(c[2] || c[3])}">${esc(c[2] || c[3])}</div>${c[4]}</div>`;
+  return `<div class="track ${complete ? 'complete' : ''}" role="list" aria-label="Order progress"><div class="track-line" aria-hidden="true"></div>${cells.map((c, i) => {
+    const need = !c[1] && act && (i < 3 || o.pastDue);
+    return `<div class="tstep ${c[1] ? 'ok' : need ? 'need' : ''}" role="listitem"><span class="tnode">${c[1] ? icon('check', 13) : i + 1}</span><div class="tlabel">${c[0]}${need ? '<em>Needs you</em>' : ''}</div><div class="tval ${c[2] ? '' : 'none'}" title="${esc(c[2] || c[3])}">${esc(c[2] || c[3])}</div>${c[4]}</div>`;
   }).join('')}</div>`;
 }
 function notaryCard(o) {
@@ -392,7 +378,7 @@ function pageOrder(o, draw) {
   return `<a class="back" href="#/orders">${icon('arrowL', 15)}All orders</a>
   <section class="card oh">
     <div class="oh-main">${seal(checksOf(o), 92, { draw, center: true })}
-      <div class="oh-title"><div class="oh-row"><h1 class="h1">Order ${o.id}</h1>
+      <div class="oh-title"><div class="oh-row"><h1 class="h1"><span class="oh-k">Order</span>${o.id}</h1>
           <button class="status-pill ${o.status}" data-action="menu" data-menu="status:${o.id}" aria-label="Change status">${o.status === 'active' ? '<span class="dot"></span>' : ''}${statusLabel(o.status)} ${icon('down', 13)}</button>
           ${o.flags.map(f => `<span class="chip ${f === 'Rush' ? 'amber' : 'ink'}">${icon(f === 'Rush' ? 'zap' : 'scan', 12)}${f}</span>`).join('')}</div>
         <div class="oh-meta"><span>${icon('building', 14)}${clientLink(o.client)}</span><span>${icon('file', 14)}${o.type}</span><span>File <span class="mono">${esc(o.file)}</span></span><span>${icon('clock', 14)}Created ${esc(o.created.replace(', 2026', ''))} by ${esc(o.createdBy)}</span></div></div>

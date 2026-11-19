@@ -43,7 +43,7 @@ function render(changed) {
   $$('.sb-item[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === nav));
   $('.shell').classList.remove('drawer');
   document.title = crumbs[crumbs.length - 1][0] + ' · Notary Nexxus';
-  updateNavCounts(); bindScrollShadow();
+  updateNavCounts(); bindScrollShadow(); placeInk();
   if (p === 'new') { prevReq = new Set(REQ.filter(r => r.test(S.draft)).map(r => r.k)); updateSummary(); }
   if (changed) {
     scrollTo(0, 0); M.page(page);
@@ -262,8 +262,8 @@ document.addEventListener('click', e => {
     case 'edit-address': editAddressModal(o); break;
     case 'msg-notary': { const aud = $('#msg-aud'); if (aud) aud.value = 'Notary'; const m = $('#msg-in'); m.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'center' }); setTimeout(() => m.focus({ preventScroll: true }), 300); break; }
     case 'nt-pick': { const n = notaryBy(d.name); S.pick[id] = S.pick[id] === n.name ? null : n.name; S.pay[id] = S.pick[id] ? n.rate.toFixed(2) : S.pay[id]; refreshDetail(); break; }
-    case 'invite': { const name = S.pick[id], pay = parseFloat(S.pay[id]) || 0; if (!pay) { toast('Enter the pay you’re offering before sending the invite', { warn: true }); $('#nt-pay').focus(); break; } o.invites.unshift({ name, pay, status: 'pending', at: 'Nov 19 · just now', receipts: [['Email delivered', 'just now'], ['SMS delivered', 'just now']] }); pushActivity(o, `Invite sent to <b>${esc(name)}</b> at ${money(pay)}`); S.pick[id] = null; refreshDetail(); toast(`Invite sent to <b>${esc(name)}</b> by email and text`, { icon: 'send' }); break; }
-    case 'assign-notary': { const name = S.pick[id]; o.notary = name; o.pay = parseFloat(S.pay[id]) || notaryBy(name).rate; o.invites.forEach(i => { if (i.status === 'pending') { i.status = 'cancelled'; i.note = 'Closed — notary assigned directly'; } }); pushActivity(o, `<b>${esc(name)}</b> assigned at ${money(o.pay)}`, 'green'); S.pick[id] = null; refreshDetail(true); toast(`<b>${esc(name)}</b> assigned to order ${o.id}`); break; }
+    case 'invite': busy(a, () => { const name = S.pick[id], pay = parseFloat(S.pay[id]) || 0; if (!pay) { toast('Enter the pay you’re offering before sending the invite', { warn: true }); $('#nt-pay').focus(); return; } o.invites.unshift({ name, pay, status: 'pending', at: 'Nov 19 · just now', receipts: [['Email delivered', 'just now'], ['SMS delivered', 'just now']] }); pushActivity(o, `Invite sent to <b>${esc(name)}</b> at ${money(pay)}`); S.pick[id] = null; refreshDetail(); toast(`Invite sent to <b>${esc(name)}</b> by email and text`, { icon: 'send' }); }); break;
+    case 'assign-notary': busy(a, () => { const name = S.pick[id]; o.notary = name; o.pay = parseFloat(S.pay[id]) || notaryBy(name).rate; o.invites.forEach(i => { if (i.status === 'pending') { i.status = 'cancelled'; i.note = 'Closed — notary assigned directly'; } }); pushActivity(o, `<b>${esc(name)}</b> assigned at ${money(o.pay)}`, 'green'); S.pick[id] = null; refreshDetail(true); toast(`<b>${esc(name)}</b> assigned to order ${o.id}`); }); break;
     case 'assign-invite': { const inv = o.invites[+d.i]; inv.status = 'accepted'; inv.note = 'Assigned from invite'; o.notary = inv.name; o.pay = inv.pay; pushActivity(o, `<b>${esc(inv.name)}</b> assigned at ${money(inv.pay)}`, 'green'); refreshDetail(true); toast(`<b>${esc(inv.name)}</b> assigned to order ${o.id}`); break; }
     case 'resend-invite': { const inv = o.invites[+d.i]; inv.receipts = [['Email delivered', 'just now'], ['SMS delivered', 'just now']]; pushActivity(o, `Invite resent to <b>${esc(inv.name)}</b>`); refreshDetail(); toast(`Invite resent to <b>${esc(inv.name)}</b>`, { icon: 'send' }); break; }
     case 'cancel-invite': { const inv = o.invites[+d.i]; inv.status = 'cancelled'; inv.note = 'Invite cancelled'; pushActivity(o, `Invite to <b>${esc(inv.name)}</b> cancelled`, 'amber'); refreshDetail(); toast(`Invite to <b>${esc(inv.name)}</b> cancelled`, { undo: () => { inv.status = 'pending'; refreshDetail(); } }); break; }
@@ -286,7 +286,7 @@ document.addEventListener('click', e => {
     case 'remove-doc': S.draft.docs.splice(+d.i, 1); $('#draft-docs').innerHTML = draftDocs(); updateSummary(); break;
     case 'ocr-fill': ocrFill(+d.i); break;
     case 'clear-draft': { const prev = S.draft; S.draft = emptyDraft(); render(false); toast('Form cleared', { undo: () => { S.draft = prev; render(false); } }); break; }
-    case 'place': placeOrder(); break;
+    case 'place': REQ.every(r => r.test(S.draft)) ? busy(a, placeOrder, 500) : placeOrder(); break;
     case 'focus': { const el = document.getElementById(d.to); if (el) { el.scrollIntoView({ block: 'center', behavior: reduceMotion() ? 'auto' : 'smooth' }); setTimeout(() => el.focus({ preventScroll: true }), 250); } break; }
     /* clients */
     case 'client-cat': S.clientCat = d.cat; render(false); M.rows($('#page')); break;
@@ -413,7 +413,7 @@ document.addEventListener('submit', e => {
   e.preventDefault();
   const form = e.target, kind = form.dataset.form;
   if (kind === 'modal') { if (!validate(form)) return; const fn = modal && modal.onSubmit; const r = fn ? fn(formData(form), form) : null; if (r !== false) closeModal(); return; }
-  if (kind === 'signin') { if (validate(form)) { go('#/orders'); } return; }
+  if (kind === 'signin') { if (validate(form)) busy($('button[type=submit]', form), () => go('#/orders'), 600); return; }
   if (kind === 'forgot') { if (validate(form)) renderAuth('forgot-sent', formData(form)); return; }
   if (kind === 'request') { if (validate(form)) renderAuth('request-sent', formData(form)); return; }
   if (['client', 'notary', 'driver'].includes(kind)) { submitAdd(kind, form); return; }
@@ -487,7 +487,7 @@ document.addEventListener('keydown', e => {
   else if (e.key === '?') { shortcutsModal(); }
   else if (e.key === 'ArrowDown' && route().parts[0] === 'orders' && !route().parts[1]) { const r = $('tr[data-peek]'); if (r && r.offsetParent) { e.preventDefault(); r.focus(); } }
 });
-addEventListener('resize', () => { closeMenu(); hideTip(); });
+addEventListener('resize', () => { closeMenu(); hideTip(); placeInk(); });
 addEventListener('scroll', () => { if (menuEl && menuEl.dataset.key !== 'filters' && Math.abs(scrollY - (+menuEl.dataset.y || 0)) > 24) closeMenu(); }, { passive: true });
 
 /* Boot */

@@ -56,10 +56,16 @@ function pageNotaries() {
   const list = S.notaries.filter(n => (!q || (n.name + n.city + n.langs.join(' ')).toLowerCase().includes(q)) && (S.notaryF === 'All' || nStatus(n)[1] === S.notaryF));
   return `${dirHead('Notaries', 'Your notary network across the Phoenix metro — commissions, coverage and track record.', `<a class="btn btn-primary" href="#/notaries/new">${icon('plus', 15)}Add notary</a>`)}
   <div class="summary-strip"><div class="seg-ctl">${filters.map(f => `<button class="${S.notaryF === f ? 'active' : ''}" data-action="notary-f" data-f="${f}">${f}<span class="n">${f === 'All' ? S.notaries.length : S.notaries.filter(n => nStatus(n)[1] === f).length}</span></button>`).join('')}</div><span class="tb-spacer"></span><div style="width:min(300px,100%)">${searchBox('notary-q', S.notaryQ, 'Search name, city or language')}</div></div>
-  ${list.length ? `<div class="ncards">${list.map(n => { const [sc, sl] = nStatus(n); return `<a class="card clickable ncard" href="#/notaries/${n.slug}">
-    <div class="ncard-top">${av(n.name, 'lg')}<div class="tx"><div class="nm truncate">${esc(n.name)}</div><div class="ct"><span class="truncate">${icon('pin', 12)}${esc(n.city)} · ${n.radius} mi</span></div></div><span class="chip ${sc}">${sl}</span></div>
-    <div class="nstats"><div><div class="k">Signings</div><div class="v">${n.signings}</div></div><div><div class="k">Usual rate</div><div class="v">${n.rate ? '$' + n.rate : '—'}</div></div><div><div class="k">Commission</div><div class="v sm" style="${expiring(n) ? 'color:var(--amber)' : ''}">${n.commission ? fmtDate(n.commission, { month: 'short', year: 'numeric' }) : 'Pending'}</div></div></div>
-    <div class="nmeta"><span class="langs">${n.langs.map(l => `<span class="chip">${esc(l)}</span>`).join('')}</span><span class="mono muted">${esc(n.phone)}</span></div></a>`; }).join('')}</div>`
+  ${list.length ? `<div class="sheet"><div class="table-wrap"><table class="dt roster"><colgroup><col><col style="width:130px"><col style="width:190px"><col style="width:110px"><col style="width:200px"><col style="width:180px"></colgroup>
+    <thead><tr><th>Notary</th><th>Status</th><th>Signings</th><th class="r">Usual rate</th><th>Commission</th><th>Languages</th></tr></thead><tbody>
+    ${list.map(n => { const [sc, sl] = nStatus(n), mx = Math.max(...S.notaries.map(x => x.signings)) || 1, days = n.commission ? Math.round((new Date(n.commission + 'T12:00:00') - NOW) / 864e5) : null;
+      return `<tr class="clickable" data-href="#/notaries/${n.slug}"><td><div class="co">${av(n.name, 'lg')}<div class="co-tx"><a class="cell-1 name-link" style="display:block" href="#/notaries/${n.slug}">${esc(n.name)}</a><div class="cell-2">${esc(n.city)} · ${n.radius} mi · <span class="mono">${esc(n.phone)}</span></div></div></div></td>
+        <td><span class="stat ${sc}"><span class="dot"></span>${sl}</span></td>
+        <td><div class="meter"><b>${n.signings}</b><span class="mbar"><i style="width:${n.signings / mx * 100}%"></i></span></div></td>
+        <td class="r money">${n.rate ? money(n.rate, 0) : '—'}</td>
+        <td>${n.commission ? `<div class="cell-1" style="${expiring(n) ? 'color:var(--amber)' : ''}">${fmtDate(n.commission, { month: 'short', day: 'numeric', year: 'numeric' })}</div><div class="cell-2">${days} days left</div><span class="left-bar ${expiring(n) ? 'warn' : ''}"><i style="width:${Math.max(4, Math.min(100, days / 1460 * 100))}%"></i></span>` : '<span class="muted">Pending setup</span>'}</td>
+        <td><div class="langs">${n.langs.map(l => `<span class="chip">${esc(l)}</span>`).join('')}</div></td></tr>`; }).join('')}
+    </tbody></table></div></div>`
     : `<div class="card empty"><div class="empty-ic">${icon('stamp', 22)}</div><h3>No notaries match</h3><p>Try a nearby city, a language, or a different filter.</p></div>`}`;
 }
 function pageNotary(n) {
