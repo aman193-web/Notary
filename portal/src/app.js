@@ -75,7 +75,7 @@ function ensureShell() {
       <a class="sb-item" data-nav="clients" href="#/clients">${icon('building', 18)}<span>Clients</span></a>
       <a class="sb-item" data-nav="notaries" href="#/notaries">${icon('stamp', 18)}<span>Notaries</span></a>
       <a class="sb-item" data-nav="drivers" href="#/drivers">${icon('truck', 18)}<span>Drivers</span></a>
-      <div class="sb-bottom"><a class="sb-item" data-nav="settings" href="#/settings">${icon('settings', 18)}<span>Settings</span></a>
+      <div class="sb-bottom"><a class="sb-item sb-ver" href="v2/#/orders" data-tip="Open Version 2 to compare">${icon('rotate', 18)}<span>Switch to V2</span><span class="sb-count">V1</span></a><a class="sb-item" data-nav="settings" href="#/settings">${icon('settings', 18)}<span>Settings</span></a>
         <button class="sb-user" data-action="menu" data-menu="user" aria-label="Account menu"><span class="av">JM</span><span class="who"><span class="nm" style="display:block">${esc(S.me.first + ' ' + S.me.last)}</span><span class="rl" style="display:block">Admin</span></span>${icon('more', 16)}</button></div>
     </aside>
     <div class="scrim" data-action="drawer"></div>
