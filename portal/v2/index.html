@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notary Nexxus Portal · Version 2</title>
+<meta name="description" content="Notary Nexxus — signing service management portal (design prototype).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@300..700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>var t='light';try{t=localStorage.getItem('nn-theme')||'light'}catch(e){}document.documentElement.setAttribute('data-theme',t)</script>
+<!--STYLE--><link rel="stylesheet" href="src/styles.css"><link rel="stylesheet" href="src/v2.css"><!--/STYLE-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<div id="toasts" aria-live="polite"></div>
+<input type="file" id="file-input" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.heic">
+<!--SCRIPTS--><script src="src/core.js"></script>
+<script src="src/orders.js"></script>
+<script src="src/forms.js"></script>
+<script src="src/directory.js"></script>
+<script src="src/app.js"></script><!--/SCRIPTS-->
+</body>
+</html>
