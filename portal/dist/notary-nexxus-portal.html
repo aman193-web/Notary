@@ -279,7 +279,9 @@ kbd{font-family:var(--font-mono);font-size:10.5px;padding:2px 5px;border-radius:
 .auth-copy{margin-top:14px;font-size:12px;color:var(--night-text-3)}
 .auth-side{position:relative;display:flex;align-items:center;justify-content:center;padding:48px 32px;background:var(--surface)}
 .auth-theme{position:absolute;top:20px;right:20px}
-.auth-form{width:100%;max-width:400px}
+#auth-slot{width:100%;max-width:460px}
+.auth-form{width:100%}
+@media (max-width:600px){.auth-side{padding:72px 20px 40px;align-items:flex-start}.auth-title{margin-top:44px}}
 .logo-lockup{display:flex;align-items:center;gap:12px}
 .logo-lockup .wm{font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;padding-left:12px;border-left:1px solid var(--line-strong);color:var(--text)}
 .auth-title{font-family:var(--font-display);font-weight:500;font-size:34px;letter-spacing:-.015em;margin-top:56px;line-height:1.1}
