@@ -1124,7 +1124,7 @@ button.doc-name:hover{color:var(--ink);text-decoration:underline;text-underline-
 
   --canvas:#F1F2F4;--surface:#FFFFFF;--surface-2:#F5F6F8;--sunken:#ECEDF0;--hover:#F4F5F7;
   --line:#ECEDF0;--line-strong:#DCDEE3;
-  --text:#111214;--text-2:#56595F;--text-3:#9A9DA5;
+  --text:#111214;--text-2:#56595F;--text-3:#696D75;
 
   --lime:#D7F552;--lime-2:#C2E52C;--lime-soft:#F1FAC9;--lime-ink:#566500;
   --lav:#DAD3FA;--lav-soft:#F0EDFE;--lav-ink:#4B3FA7;
@@ -1136,9 +1136,9 @@ button.doc-name:hover{color:var(--ink);text-decoration:underline;text-underline-
   --accent:var(--lime);--accent-strong:var(--lime-2);--accent-text:var(--lime-ink);--accent-soft:var(--lime-soft);
   --btn:#111214;--btn-hover:#2A2C30;--btn-text:#FFFFFF;
   --night:#111214;--night-2:#1B1C1F;--night-line:rgba(255,255,255,.07);
-  --night-text:#F3F4F6;--night-text-2:#A4A7AE;--night-text-3:#6C6F76;
+  --night-text:#F3F4F6;--night-text-2:#A4A7AE;--night-text-3:#8A8D94;
   --foil:#6F8700;--foil-soft:var(--lime-soft);
-  --red:#DE4339;--red-soft:var(--rose-soft);--amber:#B06D00;--amber-soft:var(--butter-soft);--green:#1D8753;--green-soft:var(--mint-soft);
+  --red:#C8372D;--red-soft:var(--rose-soft);--amber:#985E00;--amber-soft:var(--butter-soft);--green:#1D8753;--green-soft:var(--mint-soft);
   --seal-track:#E3E5E9;
   --shadow-sm:0 1px 2px rgba(17,18,20,.04);
   --shadow-md:0 2px 6px rgba(17,18,20,.04),0 18px 36px -18px rgba(17,18,20,.18);
@@ -1147,7 +1147,7 @@ button.doc-name:hover{color:var(--ink);text-decoration:underline;text-underline-
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --canvas:#0C0D0F;--surface:#16171A;--surface-2:#1C1D21;--sunken:#121316;--hover:#1E1F23;--line:#24262B;--line-strong:#32353B;
-  --text:#F2F3F5;--text-2:#ACAFB6;--text-3:#70737B;
+  --text:#F2F3F5;--text-2:#B4B7BE;--text-3:#8C9099;
   --lime-soft:rgba(215,245,82,.13);--lime-ink:#D7F552;
   --lav:#3B3566;--lav-soft:rgba(160,145,255,.13);--lav-ink:#C4BBFF;
   --mint:#1F4A37;--mint-soft:rgba(110,220,165,.12);--mint-ink:#8EE3B8;
@@ -1159,7 +1159,7 @@ button.doc-name:hover{color:var(--ink);text-decoration:underline;text-underline-
 }}
 :root[data-theme="dark"]{
   --canvas:#0C0D0F;--surface:#16171A;--surface-2:#1C1D21;--sunken:#121316;--hover:#1E1F23;--line:#24262B;--line-strong:#32353B;
-  --text:#F2F3F5;--text-2:#ACAFB6;--text-3:#70737B;
+  --text:#F2F3F5;--text-2:#B4B7BE;--text-3:#8C9099;
   --lime-soft:rgba(215,245,82,.13);--lime-ink:#D7F552;
   --lav:#3B3566;--lav-soft:rgba(160,145,255,.13);--lav-ink:#C4BBFF;
   --mint:#1F4A37;--mint-soft:rgba(110,220,165,.12);--mint-ink:#8EE3B8;
@@ -1305,7 +1305,7 @@ kbd{border-radius:6px;background:var(--surface-2);box-shadow:none}
 .sb-new{height:48px;border-radius:999px;background:var(--lime);border:0;color:#111214;font-weight:600;font-size:14px;padding:0 6px 0 18px;box-shadow:0 10px 24px -12px rgba(215,245,82,.55)}
 .sb-new:hover{background:#E2F87A}
 .sb-new kbd{background:rgba(17,18,20,.1);border:0;color:rgba(17,18,20,.6);border-radius:999px;padding:3px 8px}
-.sb-label{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:#5B5E65;padding:22px 14px 8px}
+.sb-label{font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:#868990;padding:22px 14px 8px}
 .sb-item{height:44px;border-radius:999px;padding:0 14px;color:#A4A7AE;font-size:14px;font-weight:500;gap:12px}
 .sb-item .ic{color:#76797F}
 .sb-item:hover{background:#1C1D20;color:#fff}
@@ -1927,6 +1927,11 @@ a.tile:hover,button.tile:hover{transform:translateY(-3px);box-shadow:var(--shado
 .card>.dir-tools+.drv{margin-top:2px}
 @media (max-width:900px){.card>.drv{margin:0 12px 8px}.card>.drv:last-child{margin-bottom:12px}}
 .card:has(>.drv){display:flow-root}
+
+/* Dark mode contrast: lime stays bright in both themes, so anything sitting on it keeps dark ink */
+.ccard.tint-lime,.ccard.tint-lime *:not(.av),.bill-row.total,.bill-row.total *:not(.av){color:#111214}
+:root[data-theme="dark"] .ccard.tint-lime .cc-stats>span,:root[data-theme="dark"] .ccard.tint-lime .chip,:root[data-theme="dark"] .ccard.tint-lime .go-btn{background:rgba(17,18,20,.1)}
+:root[data-theme="dark"] .ccard.tint-lime .cc-sub,:root[data-theme="dark"] .ccard.tint-lime .cc-stats small{opacity:.75}
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
